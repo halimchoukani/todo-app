@@ -22,6 +22,32 @@ function addElement(task) {
   tr.appendChild(td1);
   tr.appendChild(td2);
   tr.appendChild(td3);
+  td2.addEventListener("dblclick", function () {
+    let currentName = td2.innerText;
+    let inputEdit = document.createElement("input");
+    inputEdit.type = "text";
+    inputEdit.value = currentName;
+    inputEdit.className = "edit-input";
+    td2.innerHTML = "";
+    td2.appendChild(inputEdit);
+    inputEdit.focus();
+
+    inputEdit.addEventListener("blur", function () {
+      let newName = inputEdit.value.trim();
+      td2.innerHTML = newName !== "" ? newName : currentName;
+      let trElement = td2.closest("tr");
+      let idx = Array.from(list.children).indexOf(trElement);
+      if (newName !== "" && tasks[idx]) {
+        tasks[idx].name = newName;
+      }
+    });
+
+    inputEdit.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        inputEdit.blur();
+      }
+    });
+  });
   donebtn.addEventListener("click", function () {
     let trElement = this.closest("tr");
     let idx = Array.from(list.children).indexOf(trElement);
@@ -34,6 +60,7 @@ function addElement(task) {
     list.removeChild(trElement);
     tasks.splice(idx, 1);
   });
+
   list.appendChild(tr);
 }
 tasks.forEach((task) => {
