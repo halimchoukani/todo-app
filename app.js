@@ -1,83 +1,81 @@
-let input = document.getElementById("todo-input");
-let form = document.getElementById("todo-form");
-let list = document.getElementById("todo-list");
+const input = document.getElementById("todo-input");
+const form = document.getElementById("todo-form");
+const list = document.getElementById("todo-list");
 
 let tasks = [];
-function addElement(task) {
-  let tr = document.createElement("tr");
-  let td1 = document.createElement("td");
-  let td2 = document.createElement("td");
-  let td3 = document.createElement("td");
-  td1.innerHTML = task.id;
-  td2.innerHTML = task.name;
-  let donebtn = document.createElement("button");
-  let deletebtn = document.createElement("button");
-  donebtn.className = "done-btn";
-  donebtn.innerHTML = "Done";
-  deletebtn.className = "delete-btn";
-  deletebtn.innerHTML = "Delete";
-  td3.className = "actions";
-  td3.appendChild(donebtn);
-  td3.appendChild(deletebtn);
-  tr.appendChild(td1);
-  tr.appendChild(td2);
-  tr.appendChild(td3);
-  td2.addEventListener("dblclick", function () {
-    let currentName = td2.innerText;
-    let inputEdit = document.createElement("input");
+
+function loadTask(task, index) {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td>${task.id}</td>
+    <td class="task-name">${task.name}</td>
+    <td class="actions">
+      <button class="done-btn">${task.done ? "Undone" : "Done"}</button>
+      <button class="edit-btn">Edit</button>
+      <button class="delete-btn">Delete</button>
+    </td>
+  `;
+  if (task.done) tr.classList.add("done");
+  list.appendChild(tr);
+}
+
+function init() {
+  list.innerHTML = "";
+  tasks.forEach((task, idx) => loadTask(task, idx));
+}
+
+form.addEventListener("submit", function (e) {
+  e.preventDefault();
+  const name = input.value.trim();
+  if (!name) return;
+  const newTask = {
+    id: tasks.length,
+    name,
+    done: false,
+  };
+  tasks.push(newTask);
+  loadTask(newTask, tasks.length - 1);
+  input.value = "";
+});
+
+
+//
+list.addEventListener("click", function (e) {
+  const tr = e.target.closest("tr");
+  if (!tr) return;
+  const idx = Array.from(list.children).indexOf(tr);
+  if (e.target.classList.contains("done-btn")) {
+    tasks[idx].done = !tasks[idx].done;
+    init();
+  }
+  if (e.target.classList.contains("delete-btn")) {
+    let confirm = window.confirm(`Are you sure you want to delete this task '${tasks[idx].name}'?`);
+    if (!confirm) return;
+    tasks.splice(idx, 1);
+    init();
+  }
+  if (e.target.classList.contains("edit-btn")) {
+    const tr = e.target.closest("tr");
+    const idx = Array.from(list.children).indexOf(tr);
+    const td = tr.querySelector(".task-name");
+    const inputEdit = document.createElement("input");
     inputEdit.type = "text";
-    inputEdit.value = currentName;
+    inputEdit.value = tasks[idx].name;
     inputEdit.className = "edit-input";
-    td2.innerHTML = "";
-    td2.appendChild(inputEdit);
+    td.innerHTML = "";
+    td.appendChild(inputEdit);
     inputEdit.focus();
 
     inputEdit.addEventListener("blur", function () {
-      let newName = inputEdit.value.trim();
-      td2.innerHTML = newName !== "" ? newName : currentName;
-      let trElement = td2.closest("tr");
-      let idx = Array.from(list.children).indexOf(trElement);
-      if (newName !== "" && tasks[idx]) {
-        tasks[idx].name = newName;
-      }
+      const newName = inputEdit.value.trim();
+      if (newName) tasks[idx].name = newName;
+      init();
     });
 
     inputEdit.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") {
-        inputEdit.blur();
-      }
+      if (e.key === "Enter") inputEdit.blur();
     });
-  });
-  donebtn.addEventListener("click", function () {
-    let trElement = this.closest("tr");
-    let idx = Array.from(list.children).indexOf(trElement);
-    trElement.classList.toggle("done");
-    donebtn.innerHTML = donebtn.innerHTML === "Done" ? "Undone" : "Done";
-  });
-  deletebtn.addEventListener("click", function () {
-    let trElement = this.closest("tr");
-    let idx = Array.from(list.children).indexOf(trElement);
-    list.removeChild(trElement);
-    tasks.splice(idx, 1);
-  });
-
-  list.appendChild(tr);
-}
-tasks.forEach((task) => {
-  addElement(task);
-});
-function addTask(event) {
-  event.preventDefault();
-  let name = input.value;
-  if (name != null && name != "") {
-    let newTask = {
-      id: tasks.length || 0,
-      name: name,
-    };
-    addElement(newTask);
-    input.value = "";
-    tasks.push(newTask);
-    return;
   }
-  return;
-}
+});
+
+init();
