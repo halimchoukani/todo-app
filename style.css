@@ -116,3 +116,12 @@ tr:last-child td {
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
+
+.edit-btn {
+    background-color: orange;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+}
